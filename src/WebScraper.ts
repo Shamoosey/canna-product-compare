@@ -70,8 +70,8 @@ export class WebScraper implements Scraper.IWebScraper {
         OriginalPrice: product.OriginalPrice,
         OriginalAmount: product.OriginalAmount,
         UrlAmount: product.Amount,
-        Highest: product.HighestPrice,
         Lowest: product.LowestPrice,
+        Highest: product.HighestPrice,
         ProductUrl: product.ProductUrl
       }));
   
