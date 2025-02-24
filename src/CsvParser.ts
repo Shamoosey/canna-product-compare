@@ -83,7 +83,7 @@ export class CsvParser implements Scraper.ICsvParser {
         const rowVals = Object.values(row);
         const productType = rowVals[classificationIndex] as string
         const productName = rowVals[productNameIndex] as string
-        const productPrice = rowVals[priceIndex] as string
+        const productPrice = rowVals[priceIndex] as number
         if(productType != undefined && productName != undefined && productPrice != undefined){
           const product: Scraper.CsvMetaData = {
             ProductName: productName,

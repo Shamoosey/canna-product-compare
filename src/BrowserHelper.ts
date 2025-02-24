@@ -21,7 +21,7 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
     if(!this._browserInstance){
       this._logger.info("Creating browser instance")
       this._browserInstance = await Puppeteer.launch({
-        headless: false,
+        headless: true,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
@@ -53,7 +53,7 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
     page.on('request', (req) => {
       const url = req.url();
       if (url.includes("sentry.io") || url.includes("session-replay")) {
-          this._logger.info(`Blocking Sentry URL: ${url}`);
+          this._logger.debug(`Blocking Sentry URL: ${url}`);
           req.abort();
       } else {
           req.continue();

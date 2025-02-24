@@ -5,9 +5,7 @@ import { BrowserHelper } from "./BrowserHelper";
 import { Page } from "puppeteer";
 import { CsvParser } from "./CsvParser";
 import { ConfigService } from "./ConfigService";
-import * as XLSX from "xlsx";
-import * as fsExtra from "fs-extra";
-import * as path from "path";
+import { ExcelService } from "./ExcelService";
 
 @injectable()
 export class WebScraper implements Scraper.IWebScraper {
@@ -15,21 +13,26 @@ export class WebScraper implements Scraper.IWebScraper {
   private _logger: Logger;
   private _csvParser: Scraper.ICsvParser
   private _configService: Scraper.IConfigService
+  private _excelService: Scraper.IExcelService
 
   constructor (
     @inject(BrowserHelper) browserHelper: Scraper.IBrowserHelper,
     @inject(Logger) logger: Logger,
     @inject (CsvParser) csvParser: Scraper.ICsvParser,
-    @inject (ConfigService) configService: Scraper.IConfigService
+    @inject (ConfigService) configService: Scraper.IConfigService,
+    @inject (ExcelService) excelService: Scraper.IExcelService
 ) {
     this._browserHelper = browserHelper;
     this._logger = logger;
     this._csvParser = csvParser;
     this._configService = configService;
+    this._excelService = excelService;
   }
 
   public async Run(): Promise<void>{
     this._logger.info("**App Started**")
+    const productsMap = new Map<string, Scraper.ScrapedProduct[]>()
+
     try {
       const csvData = await this._csvParser.ImportCsvData();
       if(csvData.size > 0){
@@ -40,7 +43,7 @@ export class WebScraper implements Scraper.IWebScraper {
           (document.querySelector(selector) as any).click();
         }, this._configService.AgeVerificationButton);
   
-        const productsMap = new Map<string, Scraper.ScrapedProduct[]>()
+        this._logger.info("Starting product scrap flow")
         for(const [key, value] of csvData){
           const products: Scraper.ScrapedProduct[] = [];
           for(const val of value){
@@ -51,64 +54,21 @@ export class WebScraper implements Scraper.IWebScraper {
           }
           productsMap.set(key, products)
         }
-  
-        await this.exportToExcel(productsMap);
+        this._logger.info(`Completed scraping product information, got ${productsMap.size} products`)
+      } else {
+        this._logger.info("No CSV data, unable to scrape product information")
       }
     } catch (e) {
-      this._logger.error("An uncaught exception occurred, unable to continue", e);
+      this._logger.error("An uncaught exception occurred while scraping product information", e);
     }
-  }
 
+    try {
+      await this._excelService.ExportToXlsxFile(productsMap);
+    } catch (e) {
+      this._logger.error("An uncaught exception occurred while exporting product data to xlsx file", e);
+    }
 
-  private async exportToExcel(productData: Map<string, Scraper.ScrapedProduct[]>){
-    this._logger.info(`Creating Xlsx file from product data map`);
-    const workbook = XLSX.utils.book_new();
-
-    productData.forEach((products, key) => {
-      const worksheetData = products.map(product => ({
-        ProductName: product.ProductName,
-        OriginalPrice: product.OriginalPrice,
-        OriginalAmount: product.OriginalAmount,
-        UrlAmount: product.Amount,
-        Lowest: product.LowestPrice,
-        Highest: product.HighestPrice,
-        ProductUrl: product.ProductUrl
-      }));
-  
-      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-
-      // Calculate the maximum width for each column, including headers
-      const headers = Object.keys(worksheetData[0]);
-      const maxLengths = headers.map(header => header.length);
-
-      worksheetData.forEach(row => {
-        Object.values(row).forEach((value, index) => {
-          const cellValue = typeof (value === 'object' && value !== null) ? value : value;
-          maxLengths[index] = Math.max(maxLengths[index], cellValue.length);
-        });
-      });
-
-      worksheet['!cols'] = maxLengths.map(length => ({ wch: length }));
-
-      // Add hyperlinks to the ProductUrl column
-      const productUrlColIndex = headers.indexOf('ProductUrl');
-      worksheetData.forEach((row, rowIndex) => {
-        const cellAddress = XLSX.utils.encode_cell({ c: productUrlColIndex, r: rowIndex + 1 });
-        worksheet[cellAddress].l = { Target: row.ProductUrl, Tooltip: 'Click to open' };
-      });
-
-      XLSX.utils.book_append_sheet(workbook, worksheet, key);
-    });
-    
-    const outputPath = this._configService.appSettings.outputPath;
-    const now = new Date();
-    const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-    const filePath = path.join(this._configService.appSettings.outputPath, `ScrapedProducts-${formattedDate}.xlsx`);
-
-    await fsExtra.ensureDir(outputPath);
-    XLSX.writeFile(workbook, filePath)
-
-    this._logger.info(`Xlsx file saved to ${filePath}`);
+    this._logger.info("** Job Complete **")
   }
 
   private async SearchProduct(page: Page, csvData: Scraper.CsvMetaData): Promise<Scraper.ScrapedProduct>{
@@ -138,11 +98,13 @@ export class WebScraper implements Scraper.IWebScraper {
       let lastPrice = await page.$eval(productPriceSelectors.LastItem, el => el.innerHTML)
       let amount = await page.$eval(this._configService.AmountSelector, el => el.innerHTML)
 
+      const firstPriceNumber = Number.parseFloat(firstPrice.replace("$", ""))
+      const lastPriceNumber = Number.parseFloat(lastPrice.replace("$", ""))
       product = {
         ProductName: csvData.ProductName,
         ProductUrl: page.url(),
-        HighestPrice: lastPrice,
-        LowestPrice: firstPrice,
+        HighestPrice: lastPriceNumber,
+        LowestPrice: firstPriceNumber,
         OriginalAmount: csvData.ProductAmount,
         OriginalPrice: csvData.ProductPrice,
         Amount: amount
@@ -150,6 +112,17 @@ export class WebScraper implements Scraper.IWebScraper {
 
     } catch (e){
       this._logger.error("An error occurred while searching for products", e)
+      if(!product){
+        product = {
+          ProductName: csvData.ProductName,
+          ProductUrl: page.url(),
+          HighestPrice: null,
+          LowestPrice: null,
+          Amount: null,
+          OriginalAmount: csvData.ProductAmount,
+          OriginalPrice: csvData.ProductPrice,
+        }
+      }
     }
 
     this._logger.info("Successfully scraped product data", product)

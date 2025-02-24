@@ -9,6 +9,10 @@ export namespace Scraper {
     ImportCsvData(): Promise<Map<string, CsvMetaData[]>>;
   }
 
+  export interface IExcelService {
+    ExportToXlsxFile(productData: Map<string, Scraper.ScrapedProduct[]>): Promise<void>;
+  }
+
   export interface IBrowserHelper {
     GetBrowser(): Promise<Browser>;
     GetNewPage(url?: string): Promise<Page>;
@@ -16,7 +20,7 @@ export namespace Scraper {
 
   export interface CsvMetaData{
     ProductName: string,
-    ProductPrice: string,
+    ProductPrice: number,
     ProductAmount: string
   }
 
@@ -55,9 +59,9 @@ export namespace Scraper {
   export interface ScrapedProduct {
     ProductName: string,
     OriginalAmount: string,
-    OriginalPrice: string,
-    HighestPrice: string,
-    LowestPrice: string,
+    OriginalPrice: number,
+    HighestPrice: number,
+    LowestPrice: number,
     ProductUrl: string,
     Amount: string,
   }
