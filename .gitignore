@@ -1,0 +1,7 @@
+/dist
+/exports
+/imports
+/node_modules
+.env
+logs
+logs/*
