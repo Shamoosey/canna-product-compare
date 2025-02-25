@@ -1,7 +1,6 @@
 import moment from "moment";
 import { createLogger, format, Logger, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
-import { Http } from "winston/lib/winston/transports";
 
 export abstract class LogFactory {
   private static tsFormat = moment().format('YYYY-MM-DD hh:mm:ss').trim();
@@ -11,7 +10,7 @@ export abstract class LogFactory {
     filename: "webscraper-%DATE%.log",
     datePattern: "YYYY-MM-DD-HH",
     dirname: "./logs",
-    maxFiles: '7d'
+    maxFiles: '7d',
   });
 
   public static GetNewLogger(): Logger {

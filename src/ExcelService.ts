@@ -26,9 +26,9 @@ export class ExcelService implements Scraper.IExcelService {
     productData.forEach((products, key) => {
       const worksheetData = products.map(product => ({
       ProductName: product.ProductName,
+      OriginalPrice: product.OriginalPrice,
       OriginalAmount: product.OriginalAmount,
       UrlAmount: product.Amount,
-      OriginalPrice: product.OriginalPrice,
       Lowest: product.LowestPrice,
       Highest: product.HighestPrice,
       ProductUrl: product.ProductUrl
@@ -69,7 +69,6 @@ export class ExcelService implements Scraper.IExcelService {
       };
 
       worksheetData.forEach((row, rowIndex) => {
-
         const productNameCell = XLSX.utils.encode_cell({ c: headers.indexOf('ProductName'), r: rowIndex + 1 });
         const originalAmountCell = XLSX.utils.encode_cell({ c: headers.indexOf('OriginalAmount'), r: rowIndex + 1 });
         const originalPriceCell = XLSX.utils.encode_cell({ c: headers.indexOf('OriginalPrice'), r: rowIndex + 1 });

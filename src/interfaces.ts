@@ -1,4 +1,5 @@
 import { Browser, Page } from "puppeteer";
+import { ProductType } from "./ProductType";
 
 export namespace Scraper {
   export interface IWebScraper {
@@ -15,7 +16,7 @@ export namespace Scraper {
 
   export interface IBrowserHelper {
     GetBrowser(): Promise<Browser>;
-    GetNewPage(url?: string): Promise<Page>;
+    GetNewPage(browser: Browser, url?: string): Promise<Page>;
   }
 
   export interface CsvMetaData{
@@ -33,12 +34,13 @@ export namespace Scraper {
     PageSelectorConfig: PageSelectorConfig,
     AmountSelector: string,
     ProductSortByPriceButton: string
-    ProductPriceSelector: ProductPriceSelector
+    ProductPriceSelector: ProductPriceSelector,
+    CategorySelectors: Map<ProductType, string>
   }
 
   export interface AppSettings {
     importPath: string,
-    outputPath: string
+    outputPath: string,
   }
 
   export interface ProductPriceSelector {

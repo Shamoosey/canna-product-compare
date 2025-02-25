@@ -18,10 +18,10 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
   }
 
   public async GetBrowser(): Promise<Browser> {
-    if(!this._browserInstance){
+    if(this._browserInstance == undefined){
       this._logger.info("Creating browser instance")
       this._browserInstance = await Puppeteer.launch({
-        headless: true,
+        headless: false,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
@@ -32,10 +32,9 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
     return this._browserInstance
   }
 
-  public async GetNewPage(url?: string): Promise<Page> {
-    if(!this._browserInstance) await this.GetBrowser();
+  public async GetNewPage(browser: Browser, url?: string): Promise<Page> {
     this._logger.info("Creating new browser page")
-    let page =  await this._browserInstance.newPage();
+    let page =  await browser.newPage();
     
     await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 

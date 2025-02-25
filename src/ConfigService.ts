@@ -3,6 +3,7 @@ import path from "path";
 import { inject, injectable } from "inversify";
 import { Scraper } from "./interfaces";
 import { Logger } from "winston";
+import { ProductType } from "./ProductType";
 
 @injectable()
 export class ConfigService implements Scraper.IConfigService{
@@ -44,6 +45,15 @@ export class ConfigService implements Scraper.IConfigService{
       SelectorInput: ".rdt_Pagination select",
       PageValue: "100" // view all
     }
+  }
+
+  get CategorySelectors(): Map<ProductType, string> {
+    const categorySelectors = new Map<ProductType, string>([
+      [ProductType.Flower, "input[value='Flower']"],
+      [ProductType.VapeCart, "input[value='Vapes']"],
+      [ProductType.PreRolls, "input[value='Pre-Rolls']"],
+    ]);
+    return categorySelectors;
   }
 
   get AmountSelector(): string {
