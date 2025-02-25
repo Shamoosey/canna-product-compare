@@ -87,16 +87,17 @@ export class WebScraper implements Scraper.IWebScraper {
           await page.goto(`${searchBaseUrl}${csvData.ProductName}`, { waitUntil: "domcontentloaded" })
 
           const productTypeSelector = this._configService.CategorySelectors.get(productType as ProductType)
-
           if(productTypeSelector != undefined){
+            //if productType has selector wait for load and click on category 
             await page.waitForSelector(productTypeSelector, { timeout: 10000 });
             await page.evaluate((selector) => {
               (document.querySelector(selector) as any).click();
             }, productTypeSelector);
           } else {
-            this._logger.warn("Missing product type map for category selector")
+            this._logger.warn(`Missing product type map for category selector ${productType}`)
           }
 
+          //click on the first product in the result 
           await page.waitForSelector(this._configService.ProductResultItemSelector, { timeout: 10000 });
           await page.evaluate((selector) => {
             (document.querySelector(selector) as any).click();
@@ -105,7 +106,7 @@ export class WebScraper implements Scraper.IWebScraper {
             waitUntil: "networkidle2"
           });
     
-          //set pageination to 100 items
+          //set store pageination to 100 items
           const pageSelectorConfig = this._configService.PageSelectorConfig;
           await page.select(pageSelectorConfig.SelectorInput, pageSelectorConfig.PageValue);
     
