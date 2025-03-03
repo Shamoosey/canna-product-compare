@@ -6,15 +6,16 @@ Application for parsing CSV data, scraping related data and adding the results t
 `npm run serve` - Runs the app
 `npm run build` - Builds the app
 
+### Build exe file cmd 
+`pkg ./dist/index.js --output ./canna-scraper.exe --targets node16 --public`
+
 ### To-Do
 - Figure out sub mapping for product weight
 - Add flag column/color to excel for incorrect data
 
+App settings configuration 
 
-AppSettings configuration 
-```
-{
-  "importPath": "", //path of the input folder
-  "outputPath": "", //path of the output folder
-}
-```
+debug : output additional logs for debugging
+logPath : path to folder for log files
+importPath : path to folder for imported csv files
+outputPath : path to folder for exported xlsx files

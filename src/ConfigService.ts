@@ -16,7 +16,7 @@ export class ConfigService implements Scraper.IConfigService{
   ) {
     this._logger = logger;
 
-    const filePath = path.resolve(__dirname, "../appSettings.json");
+    const filePath = path.resolve(process.cwd(), "./app-settings.json");
     const rawData = fse.readFileSync(filePath, "utf-8");
     this.settings = JSON.parse(rawData);
   }

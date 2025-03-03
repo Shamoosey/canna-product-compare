@@ -58,11 +58,15 @@ export class WebScraper implements Scraper.IWebScraper {
       this._logger.error("An uncaught exception occurred while scraping product information", e);
     }
 
-    try {
-      await this._excelService.ExportToXlsxFile(productsMap);
-    } catch (e) {
-      this._logger.error("An uncaught exception occurred while exporting product data to xlsx file", e);
+    if(productsMap.size > 0){
+      try {
+        await this._excelService.ExportToXlsxFile(productsMap);
+      } catch (e) {
+        this._logger.error("An uncaught exception occurred while exporting product data to xlsx file", e);
+      }
     }
+
+    await this._browserHelper.Close();
 
     this._logger.info("** Job Complete **")
   }
@@ -81,6 +85,10 @@ export class WebScraper implements Scraper.IWebScraper {
       for (const csvData of productCsv) {
         this._logger.info(`Searching for CSV data ${csvData.ProductName}`)
         let product: Scraper.ScrapedProduct;
+
+        const startIndex = csvData.ProductName.lastIndexOf("-"); 
+        let amount = csvData.ProductName.substring(startIndex + 1).replace(/\s/g, "");
+
         try {
           //search value using URL
           const searchBaseUrl = this._configService.SearchBaseUrl;
@@ -97,24 +105,34 @@ export class WebScraper implements Scraper.IWebScraper {
             this._logger.warn(`Missing product type map for category selector ${productType}`)
           }
 
+          //add leading zero for amounts with decimal vals s
+          const i = amount.lastIndexOf("x")
+          if(amount.slice(i + 1).startsWith(".")){
+            amount = `${amount.slice(0, i + 1)}0${amount.slice(i + 1, amount.length)}`
+          }
+
           //click on the first product in the result 
           await page.waitForSelector(this._configService.ProductResultItemSelector, { timeout: 10000 });
-          await page.evaluate((selector) => {
-            (document.querySelector(selector) as any).click();
-          }, this._configService.ProductResultItemSelector);
+          await page.click(`xpath///div[contains(@class, 'infinite-scroll-component')]//a[//a[.//span = '${amount}']]`)
           await page.waitForNavigation({
             waitUntil: "networkidle2"
           });
+
+          try {
+              await page.click(`xpath///a[contains(text(), '${amount}')]`);
+          } catch (error) {
+            this._logger.debug(`No amount tab selection found for product ${csvData.ProductName}`)
+          }
     
           //set store pageination to 100 items
           const pageSelectorConfig = this._configService.PageSelectorConfig;
           await page.select(pageSelectorConfig.SelectorInput, pageSelectorConfig.PageValue);
-    
+
           //get product first & last price
           const productPriceSelectors = this._configService.ProductPriceSelector;
           let firstPrice = await page.$eval(productPriceSelectors.FirstItem, el => el.innerHTML)
           let lastPrice = await page.$eval(productPriceSelectors.LastItem, el => el.innerHTML)
-          let amount = await page.$eval(this._configService.AmountSelector, el => el.innerHTML)
+          let price = await page.$eval(this._configService.AmountSelector, el => el.innerHTML)
     
           const firstPriceNumber = Number.parseFloat(firstPrice.replace("$", ""))
           const lastPriceNumber = Number.parseFloat(lastPrice.replace("$", ""))
@@ -125,7 +143,7 @@ export class WebScraper implements Scraper.IWebScraper {
             LowestPrice: firstPriceNumber,
             OriginalAmount: csvData.ProductAmount,
             OriginalPrice: csvData.ProductPrice,
-            Amount: amount
+            Amount: price,
           }
 
           this._logger.info("Successfully scraped product data", product)
@@ -133,7 +151,7 @@ export class WebScraper implements Scraper.IWebScraper {
           this._logger.error("An error occurred while searching for products", e)
           if(!product){
             product = {
-              OriginalAmount: csvData.ProductAmount,
+              OriginalAmount: amount,
               OriginalPrice: csvData.ProductPrice,
               ProductName: csvData.ProductName,
               HighestPrice: null,

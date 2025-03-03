@@ -1,18 +1,19 @@
 {
   "name": "canna-product-compare",
   "version": "1.0.0",
-  "description": "",
+  "author": "shamus osler",
+  "license": "ISC",
+  "description": "A webscraper to automate a repetative product lookup & compare workflow",
   "main": "dist/index.js",
   "scripts": {
     "serve": "npm run build && node dist/index.js",
-    "build": "tsc"
+    "build": "tsc && cp ./app-settings.json dist/"
   },
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
     "cheerio": "^1.0.0",
     "cron": "^4.0.0",
     "csv-parser": "^3.2.0",
-    "dotenv": "^16.4.7",
     "fs-extra": "^11.3.0",
     "inversify": "^6.2.1",
     "node-html-parser": "^5.2.0",
@@ -27,10 +28,20 @@
     "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.21.0",
     "@types/cheerio": "^0.22.31",
     "@types/cron": "^1.7.3",
-    "@types/puppeteer": "^5.4.4"
+    "@types/puppeteer": "^5.4.4",
+    "eslint": "^9.21.0",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.25.0"
   },
-  "author": "shamus osler",
-  "license": "ISC"
+  "pkg": {
+    "assets": [
+      "node_modules/puppeteer-extra-plugin-stealth/**/*"
+    ],
+    "scripts": [
+      "dist/**/*.js"
+    ]
+  }
 }

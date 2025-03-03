@@ -3,7 +3,27 @@ import { Logger } from "winston";
 import { Scraper } from "./interfaces";
 import Puppeteer from "puppeteer-extra";
 import { Browser, Page } from "puppeteer";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
+
+// Add the Imports before StealthPlugin, this is rly dumb and idk why i need to do this
+require('puppeteer-extra-plugin-stealth/evasions/chrome.app')
+require('puppeteer-extra-plugin-stealth/evasions/chrome.csi')
+require('puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes')
+require('puppeteer-extra-plugin-stealth/evasions/chrome.runtime')
+require('puppeteer-extra-plugin-stealth/evasions/defaultArgs') // pkg warned me this one was missing
+require('puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow')
+require('puppeteer-extra-plugin-stealth/evasions/media.codecs')
+require('puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency')
+require('puppeteer-extra-plugin-stealth/evasions/navigator.languages')
+require('puppeteer-extra-plugin-stealth/evasions/navigator.permissions')
+require('puppeteer-extra-plugin-stealth/evasions/navigator.plugins')
+require('puppeteer-extra-plugin-stealth/evasions/navigator.vendor')
+require('puppeteer-extra-plugin-stealth/evasions/navigator.webdriver')
+require('puppeteer-extra-plugin-stealth/evasions/sourceurl')
+require('puppeteer-extra-plugin-stealth/evasions/user-agent-override')
+require('puppeteer-extra-plugin-stealth/evasions/webgl.vendor')
+require('puppeteer-extra-plugin-stealth/evasions/window.outerdimensions')
+
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 
 @injectable()
 export class BrowserHelper implements Scraper.IBrowserHelper{
@@ -17,6 +37,13 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
     Puppeteer.use(StealthPlugin());
   }
 
+  public async Close(): Promise<void> {
+    if(this._browserInstance != undefined){
+      await this._browserInstance.close();
+      this._browserInstance = undefined;
+    }
+  }
+
   public async GetBrowser(): Promise<Browser> {
     if(this._browserInstance == undefined){
       this._logger.info("Creating browser instance")
@@ -24,6 +51,8 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
         headless: false,
         args: [
           "--no-sandbox",
+          '--disable-gpu',
+          "--disable-site-isolation-trials",
           "--disable-setuid-sandbox",
           "--disable-blink-features=AutomationControlled",
         ]

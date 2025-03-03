@@ -1,28 +1,31 @@
 import moment from "moment";
 import { createLogger, format, Logger, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
+import fs from 'fs';
+import path from 'path';
 
 export abstract class LogFactory {
   private static tsFormat = moment().format('YYYY-MM-DD hh:mm:ss').trim();
-  private static logLevel = "info"
-
-  private static fileTransport = new DailyRotateFile ({
-    filename: "webscraper-%DATE%.log",
-    datePattern: "YYYY-MM-DD-HH",
-    dirname: "./logs",
-    maxFiles: '7d',
-  });
 
   public static GetNewLogger(): Logger {
+    const appSettingsPath = path.resolve(process.cwd(), './app-settings.json');
+    const appSettings = JSON.parse(fs.readFileSync(appSettingsPath, 'utf-8'));
+    const transport = new DailyRotateFile ({
+      filename: "webscraper-%DATE%.log",
+      datePattern: "YYYY-MM-DD-HH",
+      dirname: "./logs",
+      maxFiles: '7d',
+    });
+
     let logger = createLogger({
-      level: this.logLevel,
+      level: "info",
       transports: [
-        this.fileTransport,
+        transport,
       ],
       format: this.getLogformat()
     })
     
-    if(process.env.NODE_ENV.toLowerCase() == "dev"){
+    if(appSettings.debug){
       logger.add(new transports.Console())
       logger.level = "debug"
     }

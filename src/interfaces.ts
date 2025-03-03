@@ -15,6 +15,7 @@ export namespace Scraper {
   }
 
   export interface IBrowserHelper {
+    Close(): Promise<void>
     GetBrowser(): Promise<Browser>;
     GetNewPage(browser: Browser, url?: string): Promise<Page>;
   }
@@ -39,6 +40,8 @@ export namespace Scraper {
   }
 
   export interface AppSettings {
+    debug: boolean,
+    logPath: string,
     importPath: string,
     outputPath: string,
   }
