@@ -1,4 +1,6 @@
 {
+  "debug": true,
+  "logPath": "C:\\Users\\shamu\\Code\\canna-product-compare\\logs",
   "importPath": "C:\\Users\\shamu\\Code\\canna-product-compare\\imports",
   "outputPath": "C:\\Users\\shamu\\Code\\canna-product-compare\\exports"
 }
