@@ -44,6 +44,7 @@ export namespace Scraper {
     logPath: string,
     importPath: string,
     outputPath: string,
+    chromePath: string,
   }
 
   export interface ProductPriceSelector {

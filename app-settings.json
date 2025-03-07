@@ -1,5 +1,6 @@
 {
   "debug": true,
+  "chromePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "logPath": "C:\\Users\\shamu\\Code\\canna-product-compare\\logs",
   "importPath": "C:\\Users\\shamu\\Code\\canna-product-compare\\imports",
   "outputPath": "C:\\Users\\shamu\\Code\\canna-product-compare\\exports"

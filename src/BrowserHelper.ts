@@ -3,6 +3,7 @@ import { Logger } from "winston";
 import { Scraper } from "./interfaces";
 import Puppeteer from "puppeteer-extra";
 import { Browser, Page } from "puppeteer";
+import { ConfigService } from "./ConfigService";
 
 // Add the Imports before StealthPlugin, this is rly dumb and idk why i need to do this
 require('puppeteer-extra-plugin-stealth/evasions/chrome.app')
@@ -29,11 +30,14 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 export class BrowserHelper implements Scraper.IBrowserHelper{
   private _logger: Logger;
   private _browserInstance : Browser;
+  private _configService: ConfigService;
 
   constructor (
-    @inject(Logger) logger: Logger
+    @inject(Logger) logger: Logger,
+    @inject(ConfigService) configService: ConfigService
   ) {
     this._logger = logger;
+    this._configService = configService;
     Puppeteer.use(StealthPlugin());
   }
 
@@ -47,8 +51,13 @@ export class BrowserHelper implements Scraper.IBrowserHelper{
   public async GetBrowser(): Promise<Browser> {
     if(this._browserInstance == undefined){
       this._logger.info("Creating browser instance")
+      if(this._configService.appSettings && this._configService.appSettings.chromePath?.trim() == ""){
+        throw new Error("No chrome path provided in app settings")
+      }
+
       this._browserInstance = await Puppeteer.launch({
         headless: false,
+        executablePath: this._configService.appSettings.chromePath,
         args: [
           "--no-sandbox",
           '--disable-gpu',

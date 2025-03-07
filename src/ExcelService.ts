@@ -43,7 +43,7 @@ export class ExcelService implements Scraper.IExcelService {
       worksheetData.forEach(row => {
         Object.values(row).forEach((value, index) => {
           const cellValue = typeof (value === 'object' && value !== null) ? value : value ?? '';
-          maxLengths[index] = Math.max(maxLengths[index], cellValue.toString().length);
+          maxLengths[index] = Math.max(maxLengths[index], (cellValue?.toString() ?? "").length);
         });
       });
 
