@@ -141,7 +141,7 @@ export class WebScraper implements Scraper.IWebScraper {
             ProductUrl: page.url(),
             HighestPrice: lastPriceNumber,
             LowestPrice: firstPriceNumber,
-            OriginalAmount: csvData.ProductAmount,
+            OriginalAmount: amount,
             OriginalPrice: csvData.ProductPrice,
             Amount: price,
           }

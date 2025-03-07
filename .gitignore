@@ -1,7 +1,9 @@
 /dist
 /exports
 /imports
+/chromium
 /node_modules
+*.exe
 .env
 logs
 logs/*
