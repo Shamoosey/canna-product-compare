@@ -9,13 +9,18 @@ Application for parsing CSV data, scraping related data and adding the results t
 ### Build exe file cmd 
 `pkg ./dist/index.js --output ./canna-scraper.exe --targets node16 --public`
 
-### To-Do
-- Figure out sub mapping for product weight
-- Add flag column/color to excel for incorrect data
 
-App settings configuration 
+Author: Shamus Osler
+App: canna-product-compare
+Version: 1.0.0
+
+** Instructions **
+
+Use a VPN as you risk an IP ban from hibuddy for scraping & automation
+Update folder references in app-settings.json 
 
 debug : output additional logs for debugging
 logPath : path to folder for log files
+chromePath: path to the local machines chrome.exe file
 importPath : path to folder for imported csv files
 outputPath : path to folder for exported xlsx files
